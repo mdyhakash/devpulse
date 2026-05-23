@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
-import { userService } from "./user.service";
+import { issueService } from "./issue.service";
 
-const createUser = async (req: Request, res: Response) => {
+const createIssue = async (req: Request, res: Response) => {
   try {
-    const result = await userService.createUserIntoDB(req.body);
+    const result = await issueService.createIssueIntoDB(req.body);
     res.status(201).json({
       success: true,
-      message: "User created successfully",
+      message: "Issue created successfully",
       data: result.rows[0],
     });
   } catch (error: any) {
@@ -17,14 +17,13 @@ const createUser = async (req: Request, res: Response) => {
     });
   }
 };
-
-const getAllUsers = async (req: Request, res: Response) => {
+const getAllIssue = async (req: Request, res: Response) => {
   try {
-    const result = await userService.getAllUserFromDB();
+    const result = await issueService.getAllIssueFromDB();
     res.status(200).json({
       success: true,
-      message: "Issues retrive successfully",
-      data: result.rows,
+      message: "Issue retrived successfully",
+      data: result,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -34,23 +33,22 @@ const getAllUsers = async (req: Request, res: Response) => {
     });
   }
 };
-
-const getSingleUser = async (req: Request, res: Response) => {
+const getSingleIssue = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const result = await userService.getSingleUserFromDB(id as string);
+    const result = await issueService.getSingleIssueFromDB(id as string);
 
-    if (result.rows.length === 0) {
+    if (!result) {
       res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "Issue not found",
         data: {},
       });
     }
     res.status(200).json({
       success: true,
-      message: "User retrive successfully",
-      data: result.rows[0],
+      message: "Issue retrived successfully",
+      data: result,
     });
   } catch (error: any) {
     res.status(500).json({
@@ -60,12 +58,11 @@ const getSingleUser = async (req: Request, res: Response) => {
     });
   }
 };
-
-const updateUser = async (req: Request, res: Response) => {
+const updateIssue = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await userService.updateUserFromDB(req.body, id as string);
+    const result = await issueService.updateIssueFromDB(req.body, id as string);
     if (result.rows.length === 0) {
       res.status(404).json({
         success: false,
@@ -86,22 +83,21 @@ const updateUser = async (req: Request, res: Response) => {
     });
   }
 };
-
-const deleteUser = async (req: Request, res: Response) => {
+const deleteIssue = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const result = await userService.deleteUserFromDB(id as string);
+    const result = await issueService.deleteIssueFromDB(id as string);
 
     if (result.rowCount === 0) {
       res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "Issue not found",
         data: {},
       });
     }
     res.status(200).json({
       success: true,
-      message: "User Deleted successfully",
+      message: "Issue Deleted successfully",
       data: {},
     });
   } catch (error: any) {
@@ -112,10 +108,11 @@ const deleteUser = async (req: Request, res: Response) => {
     });
   }
 };
-export const userController = {
-  createUser,
-  getAllUsers,
-  getSingleUser,
-  updateUser,
-  deleteUser,
+
+export const issueController = {
+  createIssue,
+  getAllIssue,
+  getSingleIssue,
+  updateIssue,
+  deleteIssue,
 };
