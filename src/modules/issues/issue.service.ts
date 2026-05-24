@@ -3,6 +3,17 @@ import type { IIssue } from "./issue.interface";
 
 const createIssueIntoDB = async (payload: IIssue) => {
   const { title, description, type, status, reporter_id } = payload;
+
+  const user = await pool.query(
+    `
+    SELECT * FROM users WHERE id = $1
+  `,
+    [reporter_id],
+  );
+
+  if (!user.rows.length) {
+    throw new Error("User not exists");
+  }
   const result = await pool.query(
     `
     INSERT INTO issues(title, description, type, status, reporter_id)
