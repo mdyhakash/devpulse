@@ -39,6 +39,37 @@ const loginUserIntoDB = async (payload: IAuth) => {
   return { accessToken };
 };
 
+const registerUserIntoDB = async (payload: IAuth) => {
+  const { name, email, password, role } = payload;
+
+  //check if the user exists
+  const userData = await pool.query(
+    `
+   SELECT * FROM users WHERE email=$1 
+    `,
+    [email],
+  );
+  if (userData.rows.length > 0) {
+    throw new Error("User already exists!");
+  }
+
+  //hash the password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  //insert the user into the database
+  const result = await pool.query(
+    `
+    INSERT INTO users (name, email, password, role) 
+    VALUES ($1, $2, $3, $4) 
+    RETURNING *
+    `,
+    [name, email, hashedPassword, role],
+  );
+  delete result.rows[0].password;
+  return result;
+};
+
 export const authService = {
   loginUserIntoDB,
+  registerUserIntoDB,
 };
