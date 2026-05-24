@@ -4,7 +4,6 @@ import express, {
   type Response,
 } from "express";
 
-import { userRoute } from "./modules/user/user.route";
 import { issueRoute } from "./modules/issues/issue.route";
 import { authRoute } from "./modules/auth/auth.route";
 
@@ -18,7 +17,6 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
 });
 
-app.use("/api/users", userRoute);
 app.use("/api/issues", issueRoute);
 app.use("/api/auth", authRoute);
 
