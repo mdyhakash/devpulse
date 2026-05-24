@@ -1,33 +1,46 @@
 import { pool } from "../../db";
-import type { IIssue } from "./issue.interface";
+import type { IIssue, IIssueUpdate } from "./issue.interface";
 
-const createIssueIntoDB = async (payload: IIssue) => {
-  const { title, description, type, status, reporter_id } = payload;
+const createIssueIntoDB = async (payload: IIssue, reporterId: number) => {
+  const { title, description, type } = payload;
 
-  const user = await pool.query(
-    `
-    SELECT * FROM users WHERE id = $1
-  `,
-    [reporter_id],
-  );
-
-  if (!user.rows.length) {
-    throw new Error("User not exists");
-  }
   const result = await pool.query(
     `
-    INSERT INTO issues(title, description, type, status, reporter_id)
-    VALUES($1,$2,$3,$4,$5)
+    INSERT INTO issues(title, description, type, reporter_id)
+    VALUES($1,$2,$3,$4)
     RETURNING *
     `,
-    [title, description, type, status, reporter_id],
+    [title, description, type, reporterId],
   );
   return result;
 };
-const getAllIssueFromDB = async () => {
-  const result = await pool.query(`
+const getAllIssueFromDB = async (params: {
+  sort?: string;
+  type?: string;
+  status?: string;
+}) => {
+  const conditions: string[] = [];
+  const values: unknown[] = [];
+  let idx = 1;
+
+  if (params.type) {
+    conditions.push(`type = $${idx++}`);
+    values.push(params.type);
+  }
+  if (params.status) {
+    conditions.push(`status = $${idx++}`);
+    values.push(params.status);
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const order = params.sort === "oldest" ? "ASC" : "DESC";
+
+  const result = await pool.query(
+    `
     SELECT * FROM issues
-    `);
+    ${where} ORDER BY created_at ${order}`,
+    values,
+  );
 
   const issues = result.rows;
   const reporterIds = [...new Set(issues.map((issue) => issue.reporter_id))];
@@ -90,8 +103,8 @@ const getSingleIssueFromDB = async (id: string) => {
   };
   return formattedIssue;
 };
-const updateIssueFromDB = async (payload: IIssue, id: string) => {
-  const { title, description, type, status, reporter_id } = payload;
+const updateIssueFromDB = async (payload: IIssueUpdate, id: string) => {
+  const { title, description, type } = payload;
   const result = await pool.query(
     `
     UPDATE issues 
@@ -99,13 +112,26 @@ const updateIssueFromDB = async (payload: IIssue, id: string) => {
     title=COALESCE($1, title), 
     description=COALESCE($2, description), 
     type=COALESCE($3, type),
-    status=COALESCE($4, status),
-    reporter_id=COALESCE($5, reporter_id)
+    updated_at=NOW()
+    
 
-    WHERE id=$6
+    WHERE id=$4
     RETURNING *
     `,
-    [title, description, type, status, reporter_id, id],
+    [title, description, type, id],
+  );
+  return result;
+};
+
+const updateIssueStatusFromDB = async (status: string, id: string) => {
+  const result = await pool.query(
+    `
+   UPDATE issues SET status=$1,
+   updated_at = NOW()
+   WHERE id =$2
+   RETURNING * 
+  `,
+    [status, id],
   );
   return result;
 };
@@ -124,5 +150,6 @@ export const issueService = {
   getAllIssueFromDB,
   getSingleIssueFromDB,
   updateIssueFromDB,
+  updateIssueStatusFromDB,
   deleteIssueFromDB,
 };

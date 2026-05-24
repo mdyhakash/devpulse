@@ -4,9 +4,9 @@ import { authService } from "./auth.service";
 const loginUser = async (req: Request, res: Response) => {
   try {
     const result = await authService.loginUserIntoDB(req.body);
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "User Login successfully",
+      message: "Login successfull",
       data: result,
     });
   } catch (error: any) {

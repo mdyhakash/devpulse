@@ -31,12 +31,15 @@ const loginUserIntoDB = async (payload: IAuth) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    role: user.role,
   };
   const accessToken = jwt.sign(jwtpayload, config.jwt_secret, {
     expiresIn: "1d",
   });
 
-  return { accessToken };
+  delete user.password;
+
+  return { token: accessToken, user };
 };
 
 const registerUserIntoDB = async (payload: IAuth) => {
@@ -60,7 +63,7 @@ const registerUserIntoDB = async (payload: IAuth) => {
   const result = await pool.query(
     `
     INSERT INTO users (name, email, password, role) 
-    VALUES ($1, $2, $3, $4) 
+    VALUES ($1, $2, $3, COALESCE($4, 'contributor')) 
     RETURNING *
     `,
     [name, email, hashedPassword, role],
