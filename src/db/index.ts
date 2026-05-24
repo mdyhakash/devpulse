@@ -1,4 +1,3 @@
-
 import config from "../config";
 import { Pool } from "pg";
 
@@ -13,7 +12,7 @@ export const initDB = async () => {
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL,
+        password TEXT NOT NULL,
         role VARCHAR(50) NOT NULL DEFAULT 'contributor',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -31,7 +30,7 @@ export const initDB = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-      `)
+      `);
     console.log("Database Connected successfully");
   } catch (error) {
     console.log(error);

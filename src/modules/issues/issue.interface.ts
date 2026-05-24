@@ -1,7 +1,7 @@
 export interface IIssue {
-  title: String;
-  description: String;
-  type: String;
-  status: String;
-  reporter_id: String;
+  title: string;
+  description: string;
+  type: string;
+  status: string;
+  reporter_id: string;
 }
